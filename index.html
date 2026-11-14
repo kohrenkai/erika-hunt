@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Erika's Treasure Hunt</title>
+<meta name="theme-color" content="#fbfaf8">
+<meta name="apple-mobile-web-app-title" content="Treasure Hunt">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#fbfaf8; --card:#ffffff; --border:#efebe7;
+  --ink:#2b2a33; --muted:#8a8794; --faint:#c9c5cf;
+  --rose:#f28ba8; --rose-dark:#de6f91; --blush:#fdebf0;
+  --mint:#e3f5ec; --mint-ink:#3f8f68;
+  --sky:#e6f0fb; --sky-ink:#4a7fb5;
+  --butter:#fff4d9; --butter-ink:#a87a12;
+  --lilac:#efeafb;
+  --shadow:0 1px 2px rgba(43,42,51,.04),0 8px 24px rgba(43,42,51,.05);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Nunito",ui-rounded,system-ui,-apple-system,sans-serif;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+#app{max-width:460px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 32px)}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+a{color:var(--rose-dark);font-weight:700;text-decoration:none}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  background:var(--rose);color:#fff;font-weight:800;font-size:17px;padding:15px 22px;border-radius:999px;
+  transition:transform .1s,background .15s;text-decoration:none}
+.btn:active{transform:scale(.98);background:var(--rose-dark)}
+.btn.ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--border);font-weight:700;font-size:16px;padding:12px 18px}
+.btn.ghost:active{background:#f6f3f0}
+.btn.small{width:auto;font-size:14px;padding:8px 14px}
+.btn.danger{background:transparent;color:#c25b6e;border:1.5px solid #f3d4da;font-size:14px;font-weight:700;padding:9px 14px}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:20px;box-shadow:var(--shadow)}
+.card+.card{margin-top:14px}
+h1,h2,h3{margin:0;line-height:1.2;letter-spacing:-.01em}
+h3{font-size:18px;font-weight:800}
+.muted{color:var(--muted)} .center{text-align:center}
+.stack>*+*{margin-top:14px}
+small{display:block;color:var(--muted);font-size:13px;line-height:1.45;margin-top:5px}
+
+/* header */
+.top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.badge{width:46px;height:46px;flex:none;border-radius:15px;background:var(--blush);display:flex;align-items:center;justify-content:center;
+  touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.badge svg{width:28px;height:28px}
+.top h1{font-size:19px;font-weight:800}
+.top .sub{font-size:14px;color:var(--muted);margin-top:1px}
+
+/* form */
+.f{display:block}.f>span{display:block;font-weight:700;font-size:14px;margin-bottom:6px}
+.f input[type=text],.f input[type=search],.f textarea,.f select{width:100%;font:inherit;font-size:16px;padding:11px 13px;border-radius:14px;border:1.5px solid var(--border);background:#fdfcfb;color:var(--ink)}
+.f textarea{min-height:86px;resize:vertical;line-height:1.45}
+.f input:focus,.f textarea:focus,.f select:focus{outline:none;border-color:var(--rose);background:#fff}
+.chk{display:flex;gap:10px;align-items:center;font-weight:600}
+.chk input{width:20px;height:20px;accent-color:var(--rose)}
+.two{display:grid;grid-template-columns:70px 1fr;gap:10px}
+.two .f:first-child input{text-align:center}
+.secthead{display:flex;align-items:center;gap:10px}
+.num{width:26px;height:26px;border-radius:50%;background:var(--blush);color:var(--rose-dark);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none}
+
+/* spot list */
+.spot{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 12px;border:1px solid var(--border);border-radius:16px;background:#fdfcfb}
+.ico{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:21px;flex:none}
+.spot .grow{flex:1;min-width:0}
+.spot .grow b{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spot .st{font-size:13px;margin-top:1px}
+.spot .ord{display:flex;flex-direction:column}
+.spot .ord button{font-size:11px;padding:3px 6px;color:var(--faint)}
+.ok{color:var(--mint-ink)} .bad{color:#c25b6e} .meh{color:var(--butter-ink)}
+
+/* map */
+#map{height:280px;border-radius:16px;border:1px solid var(--border);z-index:0}
+.pin{width:22px;height:22px;border-radius:50%;background:var(--rose);border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.results{border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:8px}
+.results:empty{display:none}
+.results button{display:block;width:100%;text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);font-size:14px;background:#fff}
+.results button:last-child{border-bottom:0}
+.results small{padding:8px 12px;margin:0}
+.gpsline{font-size:14px;text-align:center;color:var(--muted)}
+
+/* splash */
+.splash{min-height:calc(100vh - 80px);display:flex;flex-direction:column;justify-content:center;gap:16px;text-align:center}
+.hero{width:180px;height:180px;margin:0 auto 6px}
+.splash h1{font-size:30px;font-weight:800}
+.splash p{font-size:16px;line-height:1.55;margin:0}
+
+/* progress steps */
+.steps{display:flex;align-items:flex-start;margin:0 0 18px;overflow-x:auto;scrollbar-width:none;padding:4px 2px}
+.steps::-webkit-scrollbar{display:none}
+.step{flex:1;min-width:58px;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+.step::before{content:"";position:absolute;top:21px;right:50%;width:100%;height:2px;background:var(--border);z-index:0}
+.step:first-child::before{display:none}
+.step.done::before,.step.active::before{background:var(--rose)}
+.step .dot{position:relative;z-index:1;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:20px;background:var(--card);border:2px solid var(--border);color:var(--faint);transition:all .3s}
+.step .dot svg{width:16px;height:16px}
+.step.done .dot{border-color:transparent}
+.step.active .dot{border-color:var(--rose);color:var(--rose);box-shadow:0 0 0 6px var(--blush)}
+.step.viewing .dot{box-shadow:0 0 0 3px #fff,0 0 0 5px var(--rose)}
+.step .tag{font-size:12px;font-weight:700;color:var(--muted)}
+.step.active .tag{color:var(--rose-dark)}
+.step.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+
+.label{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--blush);color:var(--rose-dark);padding:5px 11px;border-radius:999px}
+.clue{white-space:pre-line;font-size:19px;line-height:1.6;font-weight:600;margin:14px 0 2px}
+.hint{background:var(--mint);border-radius:14px;padding:11px 14px;font-size:15px;line-height:1.45}
+.hint b{color:var(--mint-ink)}
+.hint.answer{background:var(--sky)} .hint.answer b{color:var(--sky-ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+
+/* meter */
+.meter{display:flex;flex-direction:column;align-items:center;gap:10px}
+.ring{position:relative;width:200px;height:200px}
+.ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.ring .inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .temp{font-size:34px;line-height:1}
+.ring .dist{font-size:30px;font-weight:800;margin-top:6px;letter-spacing:-.02em}
+.ring .word{font-size:14px;font-weight:700;color:var(--muted)}
+.arrow{width:38px;height:38px;transition:transform .4s}
+.dir{font-size:14px;color:var(--muted);text-align:center}
+.warn{font-size:13px;color:var(--butter-ink);text-align:center}
+.warn:empty{display:none}
+.bigico{width:64px;height:64px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:28px}
+
+/* reveal */
+.reveal .ico.big{width:96px;height:96px;font-size:46px;margin:4px auto 0;animation:pop .6s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+.reveal h2{font-size:24px;font-weight:800;text-align:center}
+.note{white-space:pre-line;background:var(--blush);border-radius:16px;padding:16px 18px;font-size:16px;line-height:1.6}
+.note .from{display:block;margin-top:10px;font-weight:800;color:var(--rose-dark);font-size:14px}
+.photo{width:100%;border-radius:16px;display:block}
+input[type=file]{display:none}
+
+/* recap */
+.recap h2{font-size:24px;font-weight:800;text-align:center}
+.recap .date{text-align:center;color:var(--muted);font-size:14px;margin-top:4px}
+.rrow{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.rrow:last-child{border-bottom:0}
+.rrow .grow{flex:1;min-width:0;font-weight:700}
+.rrow .t{font-size:13px;color:var(--muted);font-weight:700}
+.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.thumbs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px}
+.letter{white-space:pre-line;background:var(--blush);border-radius:18px;padding:20px;font-size:16px;line-height:1.65;text-align:center}
+.letter .from{display:block;margin-top:12px;font-weight:800;color:var(--rose-dark)}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(43,42,51,.32);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;z-index:1000;padding:12px;overflow-y:auto}
+.modal .card{width:100%;max-width:440px;margin:auto 0 env(safe-area-inset-bottom);border-radius:26px}
+.modal input[type=password]{width:100%;font:inherit;font-size:22px;padding:12px;border-radius:14px;border:1.5px solid var(--border);text-align:center;letter-spacing:.3em}
+.gm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gm-grid .btn{font-size:14px;padding:11px 8px}
+.sim{background:var(--sky);border-radius:16px;padding:12px;font-size:13px}
+.sim .btn{font-size:13px;padding:9px 10px}
+.linkbox{width:100%;font-family:ui-monospace,Menlo,monospace;font-size:12px;padding:10px;border-radius:12px;border:1.5px solid var(--border);height:90px;word-break:break-all;color:var(--muted)}
+
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:1100}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 22px);transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:700;z-index:1200;animation:fade 2.2s forwards;white-space:nowrap}
+@keyframes fade{0%{opacity:0;transform:translate(-50%,8px)}10%,80%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* =====================================================================
+   ✏️  ERIKA'S HUNT: edit the text between the quotes.
+   lat / lng = exact GPS spot. Get them in Google Maps: press and hold
+   the exact spot, then copy the two numbers shown (e.g. 1.29457, 103.83820).
+   ===================================================================== */
+const HUNT = {
+  heading: "Happy Birthday, Erika! 🎂",
+  herName: "Erika",
+  fromName: "Me",
+  intro: "Today is full of little secrets. Each step is a hidden spot somewhere in Singapore. Solve the clue, find the spot, and it unlocks when you're standing right on it.",
+  radius: 20,
+  meter: true,
+  gmCode: "1234",
+  finalMessage: "Happy birthday, Erika! 💖 Thank you for today and for every day. Here's to another year of adventures together.",
+  spots: [
+    { emoji:"🥐", name:"Dearborn, New Bahru", lat:1.29457, lng:103.83820, checked:false,
+      clue:"Spot #1: brunch is the mission —\ngranola, sourdough, a bakery's ambition.\nIn an old school turned shiny and new,\nwe'll eat first, then see what we do.",
+      hints:["Think granola and fresh-baked sourdough.","We've been here before! 🥔🥚 Potato egg, steak, and that butter and bread we couldn't stop eating. 🧈🍞"],
+      message:"Lunch is on me! Order whatever you want, no sharing required (but I'll still ask for a bite)." },
+    { emoji:"👜", name:"Crafune, New Bahru", lat:1.29457, lng:103.83820, checked:false,
+      clue:"Spot #2 you can't eat, I'm afraid —\nit's something with your own hands made.\nCut it, stitch it, stamp your name,\nthen carry it around for fame.",
+      hints:["You'll be crafting with leather today.","Don't go far — it's in the same building. Look for #02-11."],
+      message:"A birthday gift you make yourself, so every time you use it you'll remember today. (Mine will probably look worse than yours.)" },
+    { emoji:"🍔", name:"Black Tap, Marina Bay Sands", lat:1.28380, lng:103.85910, checked:false,
+      clue:"Last spot! Bring your appetite:\nburgers stacked to a silly height,\nmilkshakes topped with cake and more,\nby the bay where three towers soar.",
+      hints:["New York-style burgers and over-the-top milkshakes.","Three towers with a boat on top. The Shoppes, Bay Level."],
+      message:"The final spot! Thank you for spending your birthday with me. Now go order the most ridiculous milkshake on the menu." }
+  ]
+};
+/* ========================================================================================= */
+
+/* small line-doodle icons */
+const ICON_PIN=`<svg viewBox="0 0 32 32" fill="none" stroke="#de6f91" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 29s-9-8.2-9-15a9 9 0 0 1 18 0c0 6.8-9 15-9 15z"/><path d="M16 17.5s-3.6-2.3-3.6-4.7a1.9 1.9 0 0 1 3.6-.9 1.9 1.9 0 0 1 3.6.9c0 2.4-3.6 4.7-3.6 4.7z" fill="#f28ba8" stroke="none"/></svg>`;
+const ICON_LOCK=`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="7" width="10" height="7" rx="2"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>`;
+const HERO=`<svg class="hero" viewBox="0 0 200 200" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="100" cy="100" r="86" fill="#fdebf0"/>
+  <circle cx="150" cy="58" r="16" fill="#fff4d9"/>
+  <circle cx="48" cy="140" r="12" fill="#e3f5ec"/>
+  <path d="M46 70l30-12 48 12 30-12v76l-30 12-48-12-30 12z" fill="#fff" stroke="#2b2a33" stroke-width="3"/>
+  <path d="M76 58v76M124 70v76" stroke="#2b2a33" stroke-width="3"/>
+  <path d="M58 118c10-4 14-16 26-14s14 16 26 10 10-22 22-24" stroke="#f28ba8" stroke-width="3" stroke-dasharray="1 7"/>
+  <path d="M132 90s-10-9-10-16a10 10 0 0 1 20 0c0 7-10 16-10 16z" fill="#f28ba8" stroke="#2b2a33" stroke-width="3"/>
+  <circle cx="132" cy="74" r="3.5" fill="#fff"/>
+  <path d="M40 46l3 6 6 3-6 3-3 6-3-6-6-3 6-3z" fill="#ffd36b"/>
+  <path d="M164 128l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="#a8d8ef"/>
+</svg>`;
+const PASTELS=["#fdebf0","#e6f0fb","#fff4d9","#e3f5ec","#efeafb","#ffece0","#e2f6f4","#f8e6f4"];
+const badge=()=>`<div class="badge" id="mascot" aria-label="Menu">${ICON_PIN}</div>`;
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const app=$("#app");
+const PREVIEW=new URLSearchParams(location.search).has("preview");
+const clone=o=>JSON.parse(JSON.stringify(o));
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+function fetchStore(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+
+/* ---------- geo ---------- */
+function haversine(a,b){const R=6371000,t=Math.PI/180,dLat=(b.lat-a.lat)*t,dLng=(b.lng-a.lng)*t;
+  const x=Math.sin(dLat/2)**2+Math.cos(a.lat*t)*Math.cos(b.lat*t)*Math.sin(dLng/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function bearing(a,b){const t=Math.PI/180,y=Math.sin((b.lng-a.lng)*t)*Math.cos(b.lat*t),
+  x=Math.cos(a.lat*t)*Math.sin(b.lat*t)-Math.sin(a.lat*t)*Math.cos(b.lat*t)*Math.cos((b.lng-a.lng)*t);return(Math.atan2(y,x)/t+360)%360}
+const DIRS=["north","north-east","east","south-east","south","south-west","west","north-west"];
+const dirName=b=>DIRS[Math.round(b/45)%8];
+const fmtDist=d=>d<1000?Math.round(d)+" m":(d/1000).toFixed(d<10000?1:0)+" km";
+
+/* ====================================================================================
+   PLAYER
+   ==================================================================================== */
+let H=null,SK=null,S=null,pos=null,fakePos=null,heading=null,watchId=null,viewIdx=null,geoError=null;
+const pDefaults=()=>({started:false,current:0,unlocked:{},photos:{},hintsShown:{},revealed:{},bill:false,locOn:false,compass:false});
+const save=()=>{if(!store(SK,S))toast("Phone storage is full; photo not saved")};
+const here=()=>fakePos||pos;
+const P=()=>H.spots;
+
+function temp(d){const r=H.radius;
+  if(d<=r)return["🎉","You're here!"];if(d<60)return["🌶️","So close!"];if(d<150)return["🔥","Hot"];
+  if(d<500)return["☀️","Warm"];if(d<1500)return["🌤️","Lukewarm"];if(d<5000)return["❄️","Cold"];return["🧊","Freezing"]}
+function closeness(d){const r=H.radius;if(d<=r)return 1;return Math.max(0,Math.min(1,1-Math.log10(d/r)/Math.log10(20000/r)))}
+
+function startGeo(){
+  if(!("geolocation" in navigator)){geoError="This browser has no location support.";renderPlay();return}
+  if(watchId!==null)return;S.locOn=true;save();
+  watchId=navigator.geolocation.watchPosition(p=>{geoError=null;pos={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy};tick()},
+    e=>{geoError=e.code===1?"Location is blocked. On iPhone: Settings → Privacy & Security → Location Services → Safari Websites → While Using.":"Waiting for GPS… try stepping into the open.";renderPlay()},
+    {enableHighAccuracy:true,maximumAge:3000,timeout:20000});
+}
+function startCompass(){
+  const go=()=>{window.addEventListener("deviceorientation",e=>{
+    if(e.webkitCompassHeading!=null)heading=e.webkitCompassHeading;else if(e.alpha!=null&&e.absolute)heading=360-e.alpha;updateMeter()},true);
+    S.compass=true;save();renderPlay()};
+  if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function")
+    DeviceOrientationEvent.requestPermission().then(r=>{if(r==="granted")go()}).catch(()=>toast("Compass not allowed"));
+  else go();
+}
+function tick(){
+  const s=P()[S.current],me=here();
+  if(!S.started||S.bill||!s||S.unlocked[S.current]||!me){if(!$("#meter"))renderPlay();else updateMeter();return}
+  const d=haversine(me,s), slack=Math.min(me.acc||0,25)*0.6;
+  if(d-slack<=H.radius){unlock();return}
+  if(!$("#meter"))renderPlay();else updateMeter();
+}
+function unlock(){if(S.unlocked[S.current])return;S.unlocked[S.current]=Date.now();viewIdx=S.current;save();renderPlay();window.scrollTo({top:0,behavior:"smooth"});setTimeout(confetti,250)}
+
+function renderPlay(){
+  if(!S.started){app.innerHTML=splash();bindMascot(openGM);return}
+  if(S.bill){app.innerHTML=header()+steps()+recap();bindMascot(openGM);bindSteps();return}
+  const i=viewIdx!=null?viewIdx:S.current;
+  app.innerHTML=header()+steps()+(S.unlocked[i]?reveal(i):clue(i));
+  bindMascot(openGM);bindSteps();updateMeter();
+}
+function splash(){return `<div class="splash">
+  <div style="position:absolute;top:calc(env(safe-area-inset-top) + 16px)">${badge()}</div>
+  ${HERO}
+  <h1>${esc(H.heading)}</h1>
+  <p class="muted">${esc(H.intro)}</p>
+  <p style="font-size:14px" class="muted">${P().length} hidden spots · unlocks within ${H.radius} m</p>
+  <button class="btn" onclick="S.started=true;save();renderPlay();confetti();startGeo()">Start the hunt</button>
+  ${PREVIEW?`<p class="sim">Test mode: press and hold the pin icon for fake-GPS controls. Progress here is separate from the real hunt.</p>`:""}</div>`}
+function header(){const got=Object.keys(S.unlocked).length;
+  return `<div class="top">${badge()}<div><h1>${esc(H.herName)}'s Treasure Hunt</h1><div class="sub">${got} of ${P().length} found${PREVIEW?" · test mode":""}</div></div></div>`}
+function steps(){return `<div class="steps">${P().map((s,i)=>{
+  const open=!!S.unlocked[i],active=!open&&i===S.current&&!S.bill,viewing=open&&viewIdx===i&&!S.bill;
+  return `<button class="step ${open?"done":""} ${active?"active":""} ${viewing?"viewing":""}" data-i="${i}">
+    <div class="dot" style="${open?`background:${PASTELS[i%PASTELS.length]}`:""}">${open?esc(s.emoji):(active?(i+1):ICON_LOCK)}</div>
+    <span class="tag">${open?"Found":(active?"Now":"Spot "+(i+1))}</span></button>`}).join("")}</div>`}
+
+function clue(i){const s=P()[i],hs=S.hintsShown[i]||0,hints=s.hints||[],rev=S.revealed[i];
+  return `<div class="card">
+    <span class="label">Clue ${i+1} of ${P().length}</span>
+    <div class="clue">${esc(s.clue)}</div>
+    <div class="stack" style="margin-top:14px">
+    ${hints.slice(0,hs).map((h,k)=>`<div class="hint"><b>Hint ${k+1}</b> · ${esc(h)}</div>`).join("")}
+    ${rev?`<div class="hint answer"><b>Answer</b> · ${esc(s.name||"this spot")}<br>
+      <a href="https://maps.apple.com/?ll=${s.lat},${s.lng}&q=${encodeURIComponent(s.name||"Spot")}" target="_blank" rel="noopener">Apple Maps</a> &nbsp;·&nbsp;
+      <a href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}" target="_blank" rel="noopener">Google Maps</a></div>`:""}
+    <div class="row">${hs<hints.length?`<button class="btn ghost small" onclick="S.hintsShown[${i}]=${hs+1};save();renderPlay()">Need a hint?</button>`
+      :(!rev?`<button class="btn ghost small" onclick="if(confirm('Give up and see the answer?')){S.revealed[${i}]=true;save();renderPlay()}">Show me the answer</button>`:"")}</div>
+    </div>
+  </div><div class="card">${meterBox()}</div>`}
+
+function meterBox(){
+  if(!here())return `<div class="meter center stack"><div class="bigico" style="background:var(--sky)">📍</div><h3>Turn on location</h3>
+    <p class="muted" style="margin:0;font-size:15px">The spot unlocks when you're standing within ${H.radius} m of it.</p>
+    ${geoError?`<p class="warn">${esc(geoError)}</p>`:""}<button class="btn" onclick="startGeo()">Allow location</button></div>`;
+  if(!H.meter)return `<div class="meter center stack" id="meter"><div class="bigico" style="background:var(--lilac)">🕵️</div><h3>No peeking</h3>
+    <p class="muted" style="margin:0;font-size:15px">Location is on. Get within ${H.radius} m of the spot and it'll unlock by itself.</p><div class="warn" id="acc"></div></div>`;
+  return `<div class="meter" id="meter"><div class="ring">
+    <svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="88" fill="none" stroke="#f3f0ec" stroke-width="10"/>
+      <circle id="ringbar" cx="100" cy="100" r="88" fill="none" stroke="#a8c8ef" stroke-width="10" stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="553" style="transition:stroke-dashoffset .8s,stroke .8s"/></svg>
+    <div class="inner"><div class="temp" id="temp">…</div><div class="dist" id="dist"></div><div class="word" id="word"></div></div></div>
+    <svg class="arrow" id="arrow" viewBox="0 0 40 40" fill="none" stroke="#de6f91" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 34V6M9 17L20 6l11 11"/></svg>
+    <div class="dir" id="dir"></div><div class="warn" id="acc"></div>
+    ${S.compass?"":`<button class="btn ghost small" onclick="startCompass()">Make the arrow follow my phone</button>`}</div>`}
+function updateMeter(){
+  if(!$("#meter"))return;const s=P()[S.current],me=here();if(!me||!s)return;
+  const acc=$("#acc");if(acc)acc.textContent=me.acc>30?`GPS is a bit fuzzy (±${Math.round(me.acc)} m). Step into the open if it won't unlock.`:"";
+  if(!H.meter)return;
+  const d=haversine(me,s),c=closeness(d),[t,w]=temp(d),b=bearing(me,s);
+  $("#temp").textContent=t;$("#dist").textContent=fmtDist(d);$("#word").textContent=w;
+  const bar=$("#ringbar");bar.style.strokeDashoffset=553*(1-Math.max(.03,c));
+  bar.style.stroke=`hsl(${Math.round(212+(343-212)*c)} ${Math.round(65+15*c)}% ${Math.round(78-6*c)}%)`;
+  $("#arrow").style.transform=`rotate(${heading!=null?b-heading:b}deg)`;
+  $("#dir").textContent=heading!=null?"Follow the arrow":`Head ${dirName(b)} · arrow up = north`;
+}
+function reveal(i){const s=P()[i],last=i===P().length-1,ph=S.photos[i],cur=i===S.current;
+  const t=new Date(S.unlocked[i]).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+  return `<div class="card stack reveal">
+    <div class="center"><span class="label" style="background:var(--mint);color:var(--mint-ink)">Found at ${t}</span></div>
+    <div class="ico big" style="background:${PASTELS[i%PASTELS.length]}">${esc(s.emoji)}</div>
+    <h2>${esc(s.name||"You found it!")}</h2>
+    ${s.message?`<div class="note">${esc(s.message)}<span class="from">— ${esc(H.fromName)}</span></div>`:""}
+    ${ph?`<img class="photo" src="${ph}" alt="">`:""}
+    <label class="btn ghost" for="cam">${ph?"Retake photo":"Add a photo of this moment"}</label>
+    <input type="file" id="cam" accept="image/*" capture="environment" onchange="photo(event,${i})">
+    ${cur?(last?`<button class="btn" onclick="S.bill=true;save();renderPlay();window.scrollTo(0,0);setTimeout(confetti,200)">See your day</button>`
+      :`<button class="btn" onclick="nextSpot()">Next clue</button>`)
+      :`<button class="btn" onclick="viewIdx=null;renderPlay()">Back to the current clue</button>`}</div>`}
+function nextSpot(){S.current=Math.min(S.current+1,P().length-1);viewIdx=null;save();renderPlay();window.scrollTo({top:0,behavior:"smooth"});tick()}
+function recap(){
+  const rows=P().map((s,i)=>`<div class="rrow"><div class="ico" style="background:${PASTELS[i%PASTELS.length]}">${esc(s.emoji)}</div>
+    <div class="grow">${esc(s.name||"Spot "+(i+1))}</div><div class="t">${S.unlocked[i]?new Date(S.unlocked[i]).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"—"}</div></div>`).join("");
+  const photos=P().map((s,i)=>S.photos[i]).filter(Boolean);
+  return `<div class="card stack recap">
+    <div class="center">${HERO.replace('class="hero"','class="hero" style="width:120px;height:120px"')}</div>
+    <h2>All ${P().length} spots found 🎉</h2>
+    <div class="date">${new Date().toLocaleDateString([],{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</div>
+    <div>${rows}</div>
+    ${photos.length?`<div class="thumbs">${photos.map(s=>`<img src="${s}" alt="">`).join("")}</div>`:""}
+    <div class="letter">${esc(H.finalMessage)}<span class="from">— ${esc(H.fromName)}</span></div>
+  </div>
+  <p class="center muted" style="margin:18px 0 12px;font-size:14px">Take a screenshot to keep this page</p>
+  <button class="btn ghost" onclick="S.bill=false;viewIdx=P().length-1;save();renderPlay()">Back</button>`}
+function photo(e,i){const f=e.target.files&&e.target.files[0];if(!f)return;const img=new Image(),url=URL.createObjectURL(f);
+  img.onload=()=>{const sc=Math.min(1,700/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);S.photos[i]=c.toDataURL("image/jpeg",.72);URL.revokeObjectURL(url);save();renderPlay()};img.src=url}
+function bindSteps(){document.querySelectorAll(".step").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(S.unlocked[i]){S.bill=false;viewIdx=i;save();renderPlay()}
+  else if(i===S.current){viewIdx=null;S.bill=false;save();renderPlay()}
+  else{b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake");toast("Not yet 🤫")}})}
+
+/* game master */
+function openGM(){
+  if(PREVIEW){gmPanel();return}
+  modal(`<h3>Secret code</h3><input type="password" id="gmc" inputmode="numeric" autocomplete="off">
+    <button class="btn" onclick="if($('#gmc').value===String(H.gmCode))gmPanel();else toast('Wrong code')">Enter</button>
+    <button class="btn ghost" onclick="closeModal()">Cancel</button>`);
+  setTimeout(()=>$("#gmc")&&$("#gmc").focus(),50);
+}
+function gmPanel(){
+  const s=P()[S.current];
+  modal(`<h3>Game master</h3><p class="muted" style="margin:0;font-size:14px">Current: spot ${S.current+1} · ${esc(s.name||"")}</p>
+    <div class="gm-grid">
+      <button class="btn" onclick="closeModal();S.started=true;S.bill=false;viewIdx=null;unlock()">Unlock this spot</button>
+      <button class="btn ghost" onclick="gmBack()">Previous spot</button>
+      <button class="btn ghost" onclick="window.open('https://maps.apple.com/?ll=${s.lat},${s.lng}&q=Spot')">Open in Maps</button>
+      <button class="btn ghost" onclick="if(confirm('Reset all progress and photos?')){S=pDefaults();save();fakePos=null;viewIdx=null;closeModal();renderPlay()}">Reset all</button>
+    </div>
+    ${PREVIEW?`<div class="sim stack"><b>Fake GPS (test mode only)</b><div class="gm-grid">
+      <button class="btn ghost" onclick="tp(6000)">6 km away</button><button class="btn ghost" onclick="tp(400)">400 m away</button>
+      <button class="btn ghost" onclick="tp(${H.radius+15})">${H.radius+15} m away</button><button class="btn ghost" onclick="tp(${Math.max(1,H.radius-5)})">Arrive</button></div>
+      <button class="btn ghost" onclick="fakePos=null;closeModal();renderPlay()">Use real GPS</button></div>`:""}
+    <button class="btn ghost" onclick="closeModal()">Close</button>`);
+}
+function gmBack(){if(S.current>0){delete S.unlocked[S.current];S.current--}delete S.unlocked[S.current];S.bill=false;viewIdx=null;save();closeModal();renderPlay()}
+function tp(m){const s=P()[S.current];fakePos={lat:s.lat-m/111320,lng:s.lng,acc:8};closeModal();S.started=true;viewIdx=null;S.bill=false;save();tick();renderPlay()}
+
+/* ---------- shared bits ---------- */
+function bindMascot(fn){const m=$("#mascot");if(!m)return;let t=null;
+  const start=()=>{t=setTimeout(()=>{t=null;fn()},1000)},stop=()=>{if(t){clearTimeout(t);t=null}};
+  m.addEventListener("touchstart",start,{passive:true});m.addEventListener("mousedown",start);
+  ["touchend","touchcancel","touchmove","mouseup","mouseleave"].forEach(ev=>m.addEventListener(ev,stop));
+  m.addEventListener("contextmenu",e=>e.preventDefault())}
+function modal(html){closeModal();const d=document.createElement("div");d.className="modal";d.id="modal";
+  d.innerHTML=`<div class="card stack">${html}</div>`;d.addEventListener("click",e=>{if(e.target===d)closeModal()});document.body.appendChild(d)}
+function closeModal(){const m=$("#modal");if(m)m.remove()}
+function confetti(){const c=$("#confetti"),x=c.getContext("2d"),dpr=window.devicePixelRatio||1;
+  c.width=innerWidth*dpr;c.height=innerHeight*dpr;x.setTransform(dpr,0,0,dpr,0,0);
+  const cols=["#f9b8ca","#f28ba8","#a8c8ef","#ffe08a","#b5e3c9","#cfc0f3"];
+  const ps=Array.from({length:90},()=>({x:Math.random()*innerWidth,y:-20-Math.random()*innerHeight*.5,vy:2+Math.random()*3,vx:-1.2+Math.random()*2.4,
+    r:Math.random()*6,vr:-.1+Math.random()*.2,w:6+Math.random()*6,h:8+Math.random()*8,c:cols[Math.random()*cols.length|0],round:Math.random()<.4}));
+  let f=0;(function loop(){x.clearRect(0,0,innerWidth,innerHeight);
+    ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;
+      if(p.round){x.beginPath();x.arc(0,0,p.w/2,0,Math.PI*2);x.fill()}else x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore()});
+    if(++f<200)requestAnimationFrame(loop);else x.clearRect(0,0,innerWidth,innerHeight)})()}
+function toast(t){const d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2300)}
+
+/* ---------- boot ---------- */
+H=HUNT;H.radius=+H.radius||20;
+SK="erika_hunt_v1"+(PREVIEW?"_test":"");
+S=Object.assign(pDefaults(),fetchStore(SK)||{});
+renderPlay();
+if(S.started&&S.locOn&&!PREVIEW)startGeo();
+</script>
+</body>
+</html>
