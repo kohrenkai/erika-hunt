@@ -130,6 +130,8 @@ small{display:block;color:var(--muted);font-size:13px;line-height:1.45;margin-to
 .dir{font-size:14px;color:var(--muted);text-align:center}
 .warn{font-size:13px;color:var(--butter-ink);text-align:center}
 .warn:empty{display:none}
+.howto{margin:0;padding:14px 16px 14px 36px;background:#fdfcfb;border:1px solid var(--border);border-radius:16px;font-size:15px;line-height:1.55}
+.howto li+li{margin-top:8px}
 .bigico{width:64px;height:64px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:28px}
 
 /* reveal */
@@ -188,11 +190,11 @@ const HUNT = {
   gmCode: "1234",
   finalMessage: "Happy birthday, Erika! 💖 Thank you for today and for every day. Here's to another year of adventures together.",
   spots: [
-    { emoji:"🥐", name:"Dearborn, New Bahru", lat:1.29457, lng:103.83820, checked:false,
+    { emoji:"🥐", name:"Dearborn, New Bahru", lat:1.2924623, lng:103.8386493, checked:false,
       clue:"Spot #1: brunch is the mission —\ngranola, sourdough, a bakery's ambition.\nIn an old school turned shiny and new,\nwe'll eat first, then see what we do.",
       hints:["Think granola and fresh-baked sourdough.","We've been here before! 🥔🥚 Potato egg, steak, and that butter and bread we couldn't stop eating. 🧈🍞"],
       message:"Lunch is on me! Order whatever you want, no sharing required (but I'll still ask for a bite)." },
-    { emoji:"👜", name:"Crafune, New Bahru", lat:1.29457, lng:103.83820, checked:false,
+    { emoji:"👜", name:"Crafune, New Bahru", lat:1.2924623, lng:103.8386493, checked:false,
       clue:"Spot #2 you can't eat, I'm afraid —\nit's something with your own hands made.\nCut it, stitch it, stamp your name,\nthen carry it around for fame.",
       hints:["You'll be crafting with leather today.","Don't go far — it's in the same building. Look for #02-11."],
       message:"A birthday gift you make yourself, so every time you use it you'll remember today. (Mine will probably look worse than yours.)" },
@@ -253,13 +255,21 @@ function temp(d){const r=H.radius;
   if(d<500)return["☀️","Warm"];if(d<1500)return["🌤️","Lukewarm"];if(d<5000)return["❄️","Cold"];return["🧊","Freezing"]}
 function closeness(d){const r=H.radius;if(d<=r)return 1;return Math.max(0,Math.min(1,1-Math.log10(d/r)/Math.log10(20000/r)))}
 
+let geoDenied=false;
+/* Asking for location from a button tap makes iPhone show its "Allow location?" pop-up.
+   If it was refused before, iPhone won't ask again, so we show how to switch it on in Settings. */
 function startGeo(){
-  if(!("geolocation" in navigator)){geoError="This browser has no location support.";renderPlay();return}
+  if(!("geolocation" in navigator)){geoError="This browser can't use location.";renderPlay();return}
   if(watchId!==null)return;S.locOn=true;save();
-  watchId=navigator.geolocation.watchPosition(p=>{geoError=null;pos={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy};tick()},
-    e=>{geoError=e.code===1?"Location is blocked. On iPhone: Settings → Privacy & Security → Location Services → Safari Websites → While Using.":"Waiting for GPS… try stepping into the open.";renderPlay()},
+  watchId=navigator.geolocation.watchPosition(p=>{geoError=null;geoDenied=false;pos={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy};tick()},
+    e=>{
+      if(e.code===1){geoDenied=true;navigator.geolocation.clearWatch(watchId);watchId=null}
+      else geoError="Waiting for GPS… try stepping into the open.";
+      renderPlay();
+    },
     {enableHighAccuracy:true,maximumAge:3000,timeout:20000});
 }
+function askLocation(){geoError=null;geoDenied=false;startGeo()}
 function startCompass(){
   const go=()=>{window.addEventListener("deviceorientation",e=>{
     if(e.webkitCompassHeading!=null)heading=e.webkitCompassHeading;else if(e.alpha!=null&&e.absolute)heading=360-e.alpha;updateMeter()},true);
@@ -315,9 +325,20 @@ function clue(i){const s=P()[i],hs=S.hintsShown[i]||0,hints=s.hints||[],rev=S.re
   </div><div class="card">${meterBox()}</div>`}
 
 function meterBox(){
+  if(!here()&&geoDenied)return `<div class="stack" id="locoff"><div class="bigico" style="background:var(--blush)">📍</div>
+    <h3 class="center">Location is switched off</h3>
+    <p class="muted center" style="margin:0;font-size:15px">The hunt needs your location to know when you've found a spot. Turn it on in your iPhone's Settings:</p>
+    <ol class="howto">
+      <li>Open the <b>Settings</b> app ⚙️</li>
+      <li>Tap <b>Privacy &amp; Security</b> → <b>Location Services</b>, and make sure it's <b>on</b></li>
+      <li>Scroll down, tap <b>Safari Websites</b>, and choose <b>While Using the App</b></li>
+      <li>Come back here and tap the button below</li>
+    </ol>
+    <button class="btn" onclick="location.reload()">I've turned it on</button>
+    <small class="center">Still not working? In Safari, tap <b>ᴀA</b> in the address bar → <b>Website Settings</b> → <b>Location</b> → <b>Allow</b>.</small></div>`;
   if(!here())return `<div class="meter center stack"><div class="bigico" style="background:var(--sky)">📍</div><h3>Turn on location</h3>
-    <p class="muted" style="margin:0;font-size:15px">The spot unlocks when you're standing within ${H.radius} m of it.</p>
-    ${geoError?`<p class="warn">${esc(geoError)}</p>`:""}<button class="btn" onclick="startGeo()">Allow location</button></div>`;
+    <p class="muted" style="margin:0;font-size:15px">The spot unlocks when you're standing within ${H.radius} m of it. Tap below, then choose <b>Allow</b> on the pop-up.</p>
+    ${geoError?`<p class="warn">${esc(geoError)}</p>`:""}<button class="btn" onclick="askLocation()">Allow location</button></div>`;
   if(!H.meter)return `<div class="meter center stack" id="meter"><div class="bigico" style="background:var(--lilac)">🕵️</div><h3>No peeking</h3>
     <p class="muted" style="margin:0;font-size:15px">Location is on. Get within ${H.radius} m of the spot and it'll unlock by itself.</p><div class="warn" id="acc"></div></div>`;
   return `<div class="meter" id="meter"><div class="ring">
