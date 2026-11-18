@@ -188,20 +188,28 @@ const HUNT = {
   radius: 20,
   meter: true,
   gmCode: "1234",
-  finalMessage: "Happy birthday, Erika! 💖 Thank you for today and for every day. Here's to another year of adventures together.",
+  finalMessage: "Happy birthday, Erika! 💖 Thank you for today: brunch up a cargo lift, two hours of pampering, scones and tea, silly photos and a cosy dinner. Before we head home, let's take the long way down Orchard Road and walk under the Christmas lights together. And between you and me… the day isn't quite over yet. Here's to another year of adventures together.",
   spots: [
-    { emoji:"🥐", name:"Dearborn, New Bahru", lat:1.2924623, lng:103.8386493, checked:false,
-      clue:"Spot #1: brunch is the mission —\ngranola, sourdough, a bakery's ambition.\nIn an old school turned shiny and new,\nwe'll eat first, then see what we do.",
-      hints:["Think granola and fresh-baked sourdough.","We've been here before! 🥔🥚 Potato egg, steak, and that butter and bread we couldn't stop eating. 🧈🍞"],
-      message:"Lunch is on me! Order whatever you want, no sharing required (but I'll still ask for a bite)." },
-    { emoji:"👜", name:"Crafune, New Bahru", lat:1.2924623, lng:103.8386493, checked:false,
-      clue:"Spot #2 you can't eat, I'm afraid —\nit's something with your own hands made.\nCut it, stitch it, stamp your name,\nthen carry it around for fame.",
-      hints:["You'll be crafting with leather today.","Don't go far — it's in the same building. Look for #02-11."],
-      message:"A birthday gift you make yourself, so every time you use it you'll remember today. (Mine will probably look worse than yours.)" },
-    { emoji:"🍔", name:"Black Tap, Marina Bay Sands", lat:1.2820465, lng:103.8576649, checked:false,
-      clue:"Last spot! Bring your appetite:\nburgers stacked to a silly height,\nmilkshakes topped with cake and more,\nby the bay where three towers soar.",
-      hints:["New York-style burgers and over-the-top milkshakes.","Three towers with a boat on top. The Shoppes, Bay Level."],
-      message:"The final spot! Thank you for spending your birthday with me. Now go order the most ridiculous milkshake on the menu." }
+    { emoji:"🥐", name:"Coexist Coffee Co. @ Hillview", lat:1.3530322, lng:103.757791, checked:false,
+      clue:"Spot #1 begins with a ride —\nnot a lift for people, but cargo inside.\nUp to the seventh, past concrete and steel,\ngreat coffee and brunch for our very first meal.",
+      hints:["Stay close to home. It's in Hillview, hidden in an industrial building.","48 Hillview Terrace. Take the cargo lift all the way up to level 7."],
+      message:"Brunch is on me! Order whatever you like. 🥐☕ And keep your eyes open: your first present makes an appearance right here, something soft and cosy for lazy days. 🎁" },
+    { emoji:"💆", name:"Balik Kampung Spa, Hillview", lat:1.3575971, lng:103.7605025, checked:false,
+      clue:"Spot #2 means going back home,\nto a kampung where slow hours roam.\nTwo hours of oils, a scrub and a rest —\ntoday, my love, you get pampered the best.",
+      hints:["Bring nothing but yourself. It's somewhere to relax, still in Hillview.","\"Going back to the village\" in Malay… 9 Chu Lin Road. Your Birthday Special starts at 2pm."],
+      message:"Two whole hours just for you: an aromatherapy massage plus a scrub, your Birthday Special. 🌿 Phones away, eyes closed, nothing to plan. Today is all about you." },
+    { emoji:"☕", name:"Avenue On 3, Paragon", lat:1.3044725, lng:103.8360951, checked:false,
+      clue:"Spot #3 is a slower beat:\nwarm scones and tea and something sweet.\nOn Orchard Road, in a mall dressed in style,\nhead up to level three and stay a while.",
+      hints:["Think afternoon tea on Orchard Road.","It's named after the floor it's on. The Paragon, #03-48."],
+      message:"Tea break! ☕ Warm scones, jam and cream, and no rushing. Let's sit for a bit before the evening begins." },
+    { emoji:"📸", name:"Another Booth, Orchard Plaza", lat:1.3012067, lng:103.8411571, checked:false,
+      clue:"Spot #4: it's time to pose!\nFour themed corners, a new scene in each of those.\nSmile, click, then print out the best:\na strip and a keychain to keep with the rest.",
+      hints:["Bring your best smile. We're taking pictures, and no photographer is needed.","Orchard Plaza, level 5. It's \"another\" kind of booth, #05-50."],
+      message:"Photo time! 📸 Let's make memories to keep: a strip to take home and a mini keychain so you carry today around with you." },
+    { emoji:"🍶", name:"MOMOYA, Orchard Plaza", lat:1.301375, lng:103.8412965, checked:false, holdMins:25,
+      clue:"Last stop is dinner, and we won't go far:\njust down a few floors from where we are.\nCrispy toriten, sashimi, some sake to share,\na cosy Kyushu izakaya is waiting down there.",
+      hints:["Japanese comfort food, Kyushu style. Don't leave the building!","Level 2, #02-24. A peachy name (momo means peach 🍑). Table's booked for 6pm."],
+      message:"The final spot! 🍶 Toriten, sashimi and a little sake. Kanpai to you, birthday girl. Don't get too comfy, though: there's one more surprise waiting at home." }
   ]
 };
 /* ========================================================================================= */
@@ -282,9 +290,14 @@ function tick(){
   const s=P()[S.current],me=here();
   if(!S.started||S.bill||!s||S.unlocked[S.current]||!me){if(!$("#meter"))renderPlay();else updateMeter();return}
   const d=haversine(me,s), slack=Math.min(me.acc||0,25)*0.6;
-  if(d-slack<=H.radius){unlock();return}
+  if(d-slack<=H.radius&&!held()){unlock();return}
   if(!$("#meter"))renderPlay();else updateMeter();
 }
+/* holdMins: a spot can't unlock by GPS until that many minutes after the previous spot was found
+   (stops spots in the same building unlocking straight away). Game master unlock still works. */
+function held(){const s=P()[S.current],prev=S.unlocked[S.current-1];
+  return !!(s&&s.holdMins&&prev&&Date.now()-prev<s.holdMins*60000)}
+setInterval(()=>{if(S&&S.started)tick()},30000);
 function unlock(){if(S.unlocked[S.current])return;S.unlocked[S.current]=Date.now();viewIdx=S.current;save();renderPlay();window.scrollTo({top:0,behavior:"smooth"});setTimeout(confetti,250)}
 
 function renderPlay(){
@@ -350,7 +363,7 @@ function meterBox(){
     ${S.compass?"":`<button class="btn ghost small" onclick="startCompass()">Make the arrow follow my phone</button>`}</div>`}
 function updateMeter(){
   if(!$("#meter"))return;const s=P()[S.current],me=here();if(!me||!s)return;
-  const acc=$("#acc");if(acc)acc.textContent=me.acc>30?`GPS is a bit fuzzy (±${Math.round(me.acc)} m). Step into the open if it won't unlock.`:"";
+  const acc=$("#acc");if(acc)acc.textContent=held()&&haversine(me,s)<=60?"Almost! This one opens a little later. Enjoy where you are for now. 💕":me.acc>30?`GPS is a bit fuzzy (±${Math.round(me.acc)} m). Step into the open if it won't unlock.`:"";
   if(!H.meter)return;
   const d=haversine(me,s),c=closeness(d),[t,w]=temp(d),b=bearing(me,s);
   $("#temp").textContent=t;$("#dist").textContent=fmtDist(d);$("#word").textContent=w;
