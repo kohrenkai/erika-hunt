@@ -115,6 +115,10 @@ small{display:block;color:var(--muted);font-size:13px;line-height:1.45;margin-to
 .clue{white-space:pre-line;font-size:19px;line-height:1.6;font-weight:600;margin:14px 0 2px}
 .hint{background:var(--mint);border-radius:14px;padding:11px 14px;font-size:15px;line-height:1.45}
 .hint b{color:var(--mint-ink)}
+.tier{border:1.5px solid var(--border);border-radius:16px;padding:12px 14px}
+.tier .tl{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.tier .clue{margin:6px 0 0;font-size:17px}
+.tier.locked{background:var(--bg);color:var(--muted);font-size:14px;border-style:dashed}
 .hint.answer{background:var(--sky)} .hint.answer b{color:var(--sky-ink)}
 .row{display:flex;gap:10px;flex-wrap:wrap}
 
@@ -189,26 +193,34 @@ const HUNT = {
   meter: true,
   gmCode: "1234",
   finalMessage: "Happy birthday, Erika! 💖 Thank you for today: brunch up a cargo lift, two hours of pampering, scones and tea, silly photos and a cosy dinner. Before we head home, let's take the long way down Orchard Road and walk under the Christmas lights together. And between you and me… the day isn't quite over yet. Here's to another year of adventures together.",
+  /* Each spot has 3 clues: the area, the street, the building.
+     The area clue shows straight away. clueKm says how close (in km) she must be
+     before the next clues appear: [street clue, building clue]. */
   spots: [
-    { emoji:"🥐", name:"Coexist Coffee Co. @ Hillview", lat:1.3530322, lng:103.757791, checked:false,
-      clue:"Spot #1 begins with a ride —\nnot a lift for people, but cargo inside.\nUp to the seventh, past concrete and steel,\ngreat coffee and brunch for our very first meal.",
-      hints:["Stay close to home. It's in Hillview, hidden in an industrial building.","48 Hillview Terrace. Take the cargo lift all the way up to level 7."],
+    { emoji:"🥐", name:"Coexist Coffee Co. @ Hillview", lat:1.3530322, lng:103.757791, checked:false, clueKm:[2, 0.3],
+      clues:["Brunch comes first, so follow your nose\nto a hill with a view, where the good coffee flows.",
+             "On Hillview Terrace, find number 48:\nan old industrial block where brunch won't wait.",
+             "Skip the people lift, take the cargo ride\nall the way up to level 7. Coffee's waiting inside."],
       message:"Brunch is on me! Order whatever you like. 🥐☕ And keep your eyes open: your first present makes an appearance right here, something soft and cosy for lazy days. 🎁" },
-    { emoji:"💆", name:"Balik Kampung Spa, Hillview", lat:1.3575971, lng:103.7605025, checked:false,
-      clue:"Spot #2 means going back home,\nto a kampung where slow hours roam.\nTwo hours of oils, a scrub and a rest —\ntoday, my love, you get pampered the best.",
-      hints:["Bring nothing but yourself. It's somewhere to relax, still in Hillview.","\"Going back to the village\" in Malay… 9 Chu Lin Road. Your Birthday Special starts at 2pm."],
+    { emoji:"💆", name:"Balik Kampung Spa, Hillview", lat:1.3575971, lng:103.7605025, checked:false, clueKm:[0.5, 0.15],
+      clues:["Still in Hillview, we're going back to the village for a while:\ntwo hours of pampering to make you smile.",
+             "Find Chu Lin Road, a quiet little lane,\nwhere the city slows down and you breathe again.",
+             "Number 9, the balik kampung place:\nyour Birthday Special at 2. Leave your phone in its case."],
       message:"Two whole hours just for you: an aromatherapy massage plus a scrub, your Birthday Special. 🌿 Phones away, eyes closed, nothing to plan. Today is all about you." },
-    { emoji:"☕", name:"Avenue On 3, Paragon", lat:1.3044725, lng:103.8360951, checked:false,
-      clue:"Spot #3 is a slower beat:\nwarm scones and tea and something sweet.\nOn Orchard Road, in a mall dressed in style,\nhead up to level three and stay a while.",
-      hints:["Think afternoon tea on Orchard Road.","It's named after the floor it's on. The Paragon, #03-48."],
+    { emoji:"☕", name:"Avenue On 3, Paragon", lat:1.3044725, lng:103.8360951, checked:false, clueKm:[3, 0.3],
+      clues:["Off to the city, where the shopping is grand:\nOrchard's waiting with a tea break, just as planned.",
+             "Along Orchard Road, number 290:\na mall dressed in luxury, polished and pretty.",
+             "Inside The Paragon, ride up to three:\na café named after its floor, with warm scones and tea. (#03-48)"],
       message:"Tea break! ☕ Warm scones, jam and cream, and no rushing. Let's sit for a bit before the evening begins." },
-    { emoji:"📸", name:"Another Booth, Orchard Plaza", lat:1.3012067, lng:103.8411571, checked:false,
-      clue:"Spot #4: it's time to pose!\nFour themed corners, a new scene in each of those.\nSmile, click, then print out the best:\na strip and a keychain to keep with the rest.",
-      hints:["Bring your best smile. We're taking pictures, and no photographer is needed.","Orchard Plaza, level 5. It's \"another\" kind of booth, #05-50."],
+    { emoji:"📸", name:"Another Booth, Orchard Plaza", lat:1.3012067, lng:103.8411571, checked:false, clueKm:[0.5, 0.15],
+      clues:["Still on Orchard, it's time to pose:\nfour themed corners, a new scene in each of those.",
+             "Head down Orchard Road to number 150:\nan older plaza, quirky and nifty.",
+             "Orchard Plaza, up to level 5, booth #05-50:\nsay cheese for a strip and a keychain to keep with me."],
       message:"Photo time! 📸 Let's make memories to keep: a strip to take home and a mini keychain so you carry today around with you." },
-    { emoji:"🍶", name:"MOMOYA, Orchard Plaza", lat:1.301375, lng:103.8412965, checked:false, holdMins:25,
-      clue:"Last stop is dinner, and we won't go far:\njust down a few floors from where we are.\nCrispy toriten, sashimi, some sake to share,\na cosy Kyushu izakaya is waiting down there.",
-      hints:["Japanese comfort food, Kyushu style. Don't leave the building!","Level 2, #02-24. A peachy name (momo means peach 🍑). Table's booked for 6pm."],
+    { emoji:"🍶", name:"MOMOYA, Orchard Plaza", lat:1.301375, lng:103.8412965, checked:false, holdMins:25, clueKm:[0.5, 0.1],
+      clues:["Last stop is dinner, and we won't go far:\njust a few floors down from where we are.",
+             "Same road, same building, same number too:\na cosy Kyushu izakaya is waiting for you.",
+             "Down to level 2, a name like a peach 🍑:\n#02-24, with toriten and sake in reach."],
       message:"The final spot! 🍶 Toriten, sashimi and a little sake. Kanpai to you, birthday girl. Don't get too comfy, though: there's one more surprise waiting at home." }
   ]
 };
@@ -253,7 +265,7 @@ const fmtDist=d=>d<1000?Math.round(d)+" m":(d/1000).toFixed(d<10000?1:0)+" km";
    PLAYER
    ==================================================================================== */
 let H=null,SK=null,S=null,pos=null,fakePos=null,heading=null,watchId=null,viewIdx=null,geoError=null;
-const pDefaults=()=>({started:false,current:0,unlocked:{},photos:{},hintsShown:{},revealed:{},bill:false,locOn:false,compass:false});
+const pDefaults=()=>({started:false,current:0,unlocked:{},photos:{},hintsShown:{},tiers:{},revealed:{},bill:false,locOn:false,compass:false});
 const save=()=>{if(!store(SK,S))toast("Phone storage is full; photo not saved")};
 const here=()=>fakePos||pos;
 const P=()=>H.spots;
@@ -290,6 +302,9 @@ function tick(){
   const s=P()[S.current],me=here();
   if(!S.started||S.bill||!s||S.unlocked[S.current]||!me){if(!$("#meter"))renderPlay();else updateMeter();return}
   const d=haversine(me,s), slack=Math.min(me.acc||0,25)*0.6;
+  const km=s.clueKm||[2,0.3],t=d<=km[1]*1000?3:d<=km[0]*1000?2:1;
+  if(s.clues&&t>(S.tiers[S.current]||1)){S.tiers[S.current]=t;save();
+    if(d-slack>H.radius||held()){renderPlay();toast(t===3?"New clue: the building! 🏢":"New clue: the street! 🛣️")}}
   if(d-slack<=H.radius&&!held()){unlock();return}
   if(!$("#meter"))renderPlay();else updateMeter();
 }
@@ -323,17 +338,17 @@ function steps(){return `<div class="steps">${P().map((s,i)=>{
     <div class="dot" style="${open?`background:${PASTELS[i%PASTELS.length]}`:""}">${open?esc(s.emoji):(active?(i+1):ICON_LOCK)}</div>
     <span class="tag">${open?"Found":(active?"Now":"Spot "+(i+1))}</span></button>`}).join("")}</div>`}
 
-function clue(i){const s=P()[i],hs=S.hintsShown[i]||0,hints=s.hints||[],rev=S.revealed[i];
+const TIERS=[["📍","The area"],["🛣️","The street"],["🏢","The building"]];
+function clue(i){const s=P()[i],rev=S.revealed[i],cl=s.clues||[s.clue],t=Math.max(1,S.tiers[i]||1),km=s.clueKm||[2,0.3];
   return `<div class="card">
-    <span class="label">Clue ${i+1} of ${P().length}</span>
-    <div class="clue">${esc(s.clue)}</div>
-    <div class="stack" style="margin-top:14px">
-    ${hints.slice(0,hs).map((h,k)=>`<div class="hint"><b>Hint ${k+1}</b> · ${esc(h)}</div>`).join("")}
+    <span class="label">Spot ${i+1} of ${P().length}</span>
+    <div class="stack" style="margin-top:12px">
+    ${cl.map((c,k)=>k<t?`<div class="tier"><div class="tl">${TIERS[k][0]} ${TIERS[k][1]}</div><div class="clue">${esc(c)}</div></div>`
+      :`<div class="tier locked">🔒 <b>${TIERS[k][1]}</b> · unlocks within ${fmtDist(km[k-1]*1000)}</div>`).join("")}
     ${rev?`<div class="hint answer"><b>Answer</b> · ${esc(s.name||"this spot")}<br>
       <a href="https://maps.apple.com/?ll=${s.lat},${s.lng}&q=${encodeURIComponent(s.name||"Spot")}" target="_blank" rel="noopener">Apple Maps</a> &nbsp;·&nbsp;
       <a href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}" target="_blank" rel="noopener">Google Maps</a></div>`:""}
-    <div class="row">${hs<hints.length?`<button class="btn ghost small" onclick="S.hintsShown[${i}]=${hs+1};save();renderPlay()">Need a hint?</button>`
-      :(!rev?`<button class="btn ghost small" onclick="if(confirm('Give up and see the answer?')){S.revealed[${i}]=true;save();renderPlay()}">Show me the answer</button>`:"")}</div>
+    <div class="row">${!rev?`<button class="btn ghost small" onclick="if(confirm('Give up and see the answer?')){S.revealed[${i}]=true;save();renderPlay()}">Show me the answer</button>`:""}</div>
     </div>
   </div><div class="card">${meterBox()}</div>`}
 
@@ -457,7 +472,7 @@ function toast(t){const d=document.createElement("div");d.className="toast";d.te
 /* ---------- boot ---------- */
 H=HUNT;H.radius=+H.radius||20;
 SK="erika_hunt_v1"+(PREVIEW?"_test":"");
-S=Object.assign(pDefaults(),fetchStore(SK)||{});
+S=Object.assign(pDefaults(),fetchStore(SK)||{});S.tiers=S.tiers||{};
 renderPlay();
 if(S.started&&S.locOn&&!PREVIEW)startGeo();
 </script>
